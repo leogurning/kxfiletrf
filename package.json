@@ -1,0 +1,34 @@
+{
+  "name": "kxfiletransfer",
+  "version": "1.0.0",
+  "description": "kx API for file transfer",
+  "main": "server04.js",
+  "scripts": {
+    "start": "node server04.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@google-cloud/storage": "^1.5.2",
+    "bcrypt-nodejs": "*",
+    "body-parser": "*",
+    "cloudinary": "^1.9.1",
+    "core-js": "*",
+    "express": "*",
+    "express-fileupload": "^0.3.0",
+    "jsonwebtoken": "*",
+    "mongoose": "*",
+    "mongoose-aggregate-paginate": "^1.0.6",
+    "mongoose-paginate": "*",
+    "morgan": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leogurning/kxfiletrf.git"
+  },
+  "author": "Leonard Gurning",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/leogurning/kxfiletrf/issues"
+  },
+  "homepage": "https://github.com/leogurning/kxfiletrf#readme"
+}
