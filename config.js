@@ -1,6 +1,6 @@
 module.exports = {
     'serverport':2005,
-    'tokenexp': 7200,
+    'tokenexp': 72000,
     'secret': '!$3cret4@uth',
 
     /* Google Cloud Storage parameters */
