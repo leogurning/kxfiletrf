@@ -10,7 +10,7 @@ const config = require('./config');
 const user = require('./routes/user.js');
 const filetransfer = require('./routes/filetransfer.js');
 
-const port = process.env.PORT || config.serverport;
+const port = process.env.PORT || process.env.KXFILETRFP_SERVICE_PORT || config.serverport;
 
 const app = express();
 app.use(upload()); // configure middleware
