@@ -1,15 +1,12 @@
 const config = require('../config');
-// Imports the Google Cloud client library
-const Storage = require('@google-cloud/storage');
 
-// Creates a client gcp storage
-const storage = new Storage({
-    projectId: config.GCLOUD_PROJECT
+const cloudinary = require('cloudinary');
+//const uploadpath = "kaxet/images/genres/";
+cloudinary.config({ 
+    cloud_name: config.cloud_name, 
+    api_key: config.api_key, 
+    api_secret: config.api_secret
 });
-const bucket = storage.bucket(config.CLOUD_BUCKET);
-var getPublicUrl = function(gcsuploadpath,filename) {
-    return `https://storage.googleapis.com/${config.CLOUD_BUCKET}/${gcsuploadpath}${filename}`;
-}
 
 exports.inputfileupload = function(req, res, next){
     const uploadpath = req.body.uploadpath;
@@ -21,46 +18,32 @@ exports.inputfileupload = function(req, res, next){
     var file = req.files.fileinputsrc,
         oriname = file.name;
     if(file){
-        const gcsname = ts+oriname.substr(oriname.length - 4);;
-        const gcsfile = bucket.file(uploadpath+gcsname);
-        const stream = gcsfile.createWriteStream({
-            metadata: {
-              contentType: file.mimetype
+      const name = ts+oriname.substr(oriname.length - 4);  
+      //const name = ts;  
+      cloudinary.v2.uploader.upload_stream(
+        {public_id: name, folder: uploadpath,invalidate: true,resource_type: 'raw'}, 
+        function(err, result){
+            if(err){
+                console.log("Input File Upload Failed", err);
+                return res.status(401).json({ success: false, 
+                  message:'Input File Upload Failed.'
+                });      
             }
-          });
-
-        stream.on('error', (err) => {
-            file.cloudStorageError = err;
-            console.log("File Upload Failed", err);
-            return res.status(401).json({ success: false, 
-                message:'File Upload Failed on streaming upload.'
-            });      
-          });
-
-        stream.on('finish', () => {
-            file.cloudStorageObject = gcsname;
-            gcsfile.makePublic().then(() => {
-                file.cloudStoragePublicUrl = getPublicUrl(uploadpath,gcsname);
-                console.log("File Uploaded successfully",gcsname);
+            else {
+                console.log("Input File Uploaded successfully",name);
                 res.status(201).json({
                   success: true,
-                  message: 'Input file is successfully uploaded.',
-                  filedata : {
-                        filepath: file.cloudStoragePublicUrl,
-                        filename: file.cloudStorageObject
-                    }
-                });
-                next();
-            })
-            .catch(err => {
-                return res.status(401).json({ success: false, 
-                    message:'File Upload Failed on making public URL.'
+                  message: 'Input File is successfully uploaded.',
+                  filedata : {filepath: result.secure_url,filename: result.public_id}
                 });      
-            });
-        });
-        
-        stream.end(file.data); 
-    }    
+            }
+        }).end(file.data);
+    } else {
+        return res.status(402).json({ success: false, 
+            message:'No input file uploaded.',
+            filedata : {filepath: "",filename: ""}
+          });
+    };
 }
 
 exports.inputfiledelete = function(req, res, next) {
@@ -68,19 +51,21 @@ exports.inputfiledelete = function(req, res, next) {
     const filename = req.body.filename;
 
     if(filename){
-        const gcsfile = bucket.file(uploadpath+filename);
-        gcsfile.delete()
-        .then(() => {
-            console.log("Delete input file Success",filename);
+        cloudinary.v2.uploader.destroy(filename,
+          {invalidate: true, resource_type: 'raw'},
+        function(err, result){
+          if(err){
+            console.log("Delete Input file Failed",filename,err);
+            res.status(401).json({ success: false, 
+              message:'Delete Input file Failed.'
+            });
+          }
+          else {
+            console.log("Delete Input file Success",filename);
             res.status(201).json({
                 success: true,
-                message: 'Input file Deleted successfully.'});    
-        })
-        .catch(err => {
-            console.log("Delete input file Failed",filename,err);
-            res.status(401).json({ success: false, 
-              message:'Delete input file Failed.'
-            });
+                message: 'Delete Input file successful.'});    
+          }
         });
     }
     else {
